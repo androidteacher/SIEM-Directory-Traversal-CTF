@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% set active = "dashboard" %}
+{% block title %}{{ s.name }} — Polaris Cloud{% endblock %}
+
+{% set type_ic = {'Compute':'cpu','Database':'database','Storage':'storage'} %}
+
+{% macro spark(sv, color) %}
+<svg class="spark" viewBox="0 0 {{ sv.w }} {{ sv.h }}" preserveAspectRatio="none" aria-hidden="true">
+  <defs><linearGradient id="as{{ color|replace('#','') }}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="{{ color }}" stop-opacity=".32"/><stop offset="1" stop-color="{{ color }}" stop-opacity="0"/></linearGradient></defs>
+  <path d="{{ sv.area }}" fill="url(#as{{ color|replace('#','') }})"/>
+  <polyline points="{{ sv.poly }}" fill="none" stroke="{{ color }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="{{ sv.last[0] }}" cy="{{ sv.last[1] }}" r="2" fill="{{ color }}"/>
+</svg>
+{% endmacro %}
+
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic(type_ic[s.type],'ic') }} Dashboard · Asset</span>
+    <h1 class="mono">{{ s.name }}</h1>
+    <p class="sub"><span class="badge b-{{ s.status }}">{{ s.status }}</span>
+      &nbsp;{{ s.type }} · <span class="mono">{{ s.region }}</span> · {{ s.spec }}</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <a class="btn ghost sm" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    <button type="button" class="btn-stop" data-stop="{{ s.name }}">{{ ic('alert','ic') }} Stop this server</button>
+  </div>
+</div>
+
+{# ---- identity / metadata ---- #}
+<div class="card">
+  <div class="kv">
+    <div><span class="kl">Resource ID</span><span class="kvv mono">{{ d.identity.resource_id }}</span></div>
+    <div><span class="kl">Internal IP</span><span class="kvv"><a class="mono" href="{{ url_for('source_netflow', ip=ip) }}">{{ ip }} {{ ic('arrow','ic') }}</a></span></div>
+    <div><span class="kl">Image / Engine</span><span class="kvv">{{ d.identity.image }}</span></div>
+    <div><span class="kl">Zone</span><span class="kvv mono">{{ d.identity.zone }}</span></div>
+    <div><span class="kl">Spec</span><span class="kvv">{{ d.identity.spec }}</span></div>
+    <div><span class="kl">Exposure</span><span class="kvv">
+      <span class="badge {{ 'b-high' if d.identity.exposure=='public' else 'b-running' }}">{{ d.identity.exposure }}</span></span></div>
+    <div><span class="kl">Owner</span><span class="kvv mono">{{ d.identity.owner }}</span></div>
+    <div><span class="kl">Created</span><span class="kvv mono">{{ d.identity.created }}</span></div>
+    <div><span class="kl">Uptime</span><span class="kvv mono">{{ d.identity.uptime }}</span></div>
+    <div><span class="kl">Encryption</span><span class="kvv">{{ d.identity.encryption }}</span></div>
+  </div>
+</div>
+
+{# ---- health metrics (type-aware) ---- #}
+<h2>Health · last 24h</h2>
+<div class="grid cols-3">
+  {% for m in d.metrics %}
+  <div class="card tile">
+    <div class="k">{{ m.label }}</div>
+    <div class="v {{ m.tone }}">{{ m.value }}</div>
+    {{ spark(m.spark, m.color) }}
+  </div>
+  {% endfor %}
+</div>
+{% if s.status != 'running' %}
+<p class="sub" style="margin-top:10px">{{ ic('info','ic') }} This asset is <b>stopped</b> — live metrics are paused; the chart shows the last 24h before shutdown.</p>
+{% endif %}
+
+{# ---- security posture + listening services ---- #}
+<div class="grid cols-2" style="margin-top:var(--s5)">
+  <div class="card">
+    <h3>{{ ic('shield','ic') }} Security posture</h3>
+    <div class="kv" style="grid-template-columns:1fr 1fr">
+      <div><span class="kl">Open alerts</span><span class="kvv">
+        {% if d.posture.open_alerts %}<span class="badge b-{{ d.posture.top_sev }}">{{ d.posture.open_alerts }} · {{ d.posture.top_sev }}</span>
+        {% else %}<span class="badge b-running">none</span>{% endif %}</span></div>
+      <div><span class="kl">Exposure</span><span class="kvv">
+        <span class="badge {{ 'b-high' if d.posture.exposure=='public' else 'b-running' }}">{{ d.posture.exposure }}</span></span></div>
+      <div><span class="kl">Last vuln scan</span><span class="kvv mono">{{ d.posture.last_scan }}</span></div>
+      <div><span class="kl">Scan findings</span><span class="kvv">
+        {% if d.posture.findings %}<span class="badge b-medium">{{ d.posture.findings }} open</span>
+        {% else %}<span class="badge b-running">clean</span>{% endif %}</span></div>
+      <div><span class="kl">Patch level</span><span class="kvv">
+        <span class="badge {{ 'b-running' if d.posture.patch=='current' else 'b-medium' }}">{{ d.posture.patch }}</span></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{ ic('activity','ic') }} Listening services</h3>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Port</th><th>Service</th><th>Exposure</th></tr></thead>
+      <tbody>
+        {% for p in d.ports %}
+        <tr>
+          <td class="mono num">{{ p.port }}</td>
+          <td class="mono">{{ p.svc }}</td>
+          <td><span class="badge {{ 'b-high' if p.exp=='public' else 'b-running' }}">{{ p.exp }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+{# ---- related alerts (cross-link to the SIEM alert drill-down) ---- #}
+<h2>Related alerts</h2>
+{% if related %}
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table class="rows-link" data-sortable>
+    <thead><tr>
+      <th class="sortable">Time <span class="ar"></span></th>
+      <th class="sortable">Severity <span class="ar"></span></th>
+      <th class="sortable">Source <span class="ar"></span></th>
+      <th>Rule</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      {% for a in related %}
+      <tr data-href="{{ url_for('alert_detail', eid=a.eid) }}">
+        <td class="mono">{{ a.time }} <span class="muted">· {{ a.ago }} ago</span></td>
+        <td><span class="sev-cell"><span class="sev-rail rail-{{ a.sev }}"></span><span class="badge b-{{ a.sev }}">{{ a.sev }}</span></span></td>
+        <td class="mono">{{ a.source }}</td>
+        <td>{{ a.rule }}</td>
+        <td style="text-align:right"><a class="row-link" href="{{ url_for('alert_detail', eid=a.eid) }}">Investigate {{ ic('arrow','ic') }}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:30px">
+  <p class="sub" style="margin:0">{{ ic('shield-check','ic') }} No open alerts for <span class="mono">{{ s.name }}</span> in the last 24h.</p>
+</div>
+{% endif %}
+
+<p class="sub" style="margin-top:14px">{{ ic('share','ic') }} Pivot to this asset's traffic:
+<a href="{{ url_for('source_netflow', ip=ip) }}">View Netflow for {{ ip }} →</a></p>
+
+{% endblock %}

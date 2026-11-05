@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% set active = "reports" %}
+{% block title %}Reports — Polaris Cloud{% endblock %}
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic('file','ic') }} Nightwatch</span>
+    <h1>SOC Reports</h1>
+    <p class="sub">Daily security summaries and edge logs for your tenant. Open one to view its contents.</p>
+  </div>
+</div>
+
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table data-sortable>
+    <thead><tr>
+      <th class="sortable">Report <span class="ar"></span></th>
+      <th class="sortable">File <span class="ar"></span></th>
+      <th class="sortable">Size <span class="ar"></span></th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      {% for r in reports %}
+      <tr>
+        <td>{{ r.label }}</td>
+        <td class="mono">{{ r.file }}</td>
+        <td class="mono">{{ r.size }}</td>
+        <td style="text-align:right">
+          <a class="btn ghost sm" href="{{ url_for('show_report') }}?report={{ r.file }}">{{ ic('search','ic') }} View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="hint" style="margin-top:16px">{{ ic('info','ic') }}
+  The viewer opens a report <b>by file name</b> — notice the <span class="mono">?report=</span> value in the address bar when you open one.</div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+# Python caches
+__pycache__/
+*.pyc
+
+# Logs
+*.log.tmp
+
+# Flag is dropped at build time (see Dockerfile) -- never commit a plaintext flag
+private_folder/
+private_folder/flag.txt
+
+# Tutorial / solution walkthrough -- not pushed to GitHub (still bundled into the
+# Docker image at build time; .gitignore does not affect the Docker build context)
+Tutorial/

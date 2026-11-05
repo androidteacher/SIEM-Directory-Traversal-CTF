@@ -1,0 +1,8 @@
+services:
+  console:
+    build: .
+    image: polaris_dirtrav_lab:local
+    container_name: nightwatch_console
+    ports:
+      - "12334:8080"     # Polaris Cloud web console (host 12334 -> container 8080)
+    restart: unless-stopped

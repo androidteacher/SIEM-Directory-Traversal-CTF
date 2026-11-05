@@ -1,0 +1,21 @@
+===========================================================
+ Nightwatch SIEM (Polaris Cloud) -- Daily Summary
+ Date: 2026-11-04   Tenant: polaris-prod   Analyst: auto
+===========================================================
+
+TOTALS
+  Events ingested .......... 968
+  Alerts raised ............ 83    (critical 1 / high 7 / medium 19 / low 56)
+  Blocked connections ...... 1,201
+  Outbound data egress ..... 1.9 GB
+
+TOP ALERTS
+  22:11  CRITICAL  Privilege escalation attempt          web-prod-01   src=10.0.4.19
+  15:02  HIGH      Brute force against SSH               batch-worker  src=203.0.113.47
+  12:48  MEDIUM    New admin account created             web-prod-01   src=10.0.4.19
+
+NOTES
+  - Quiet morning, activity concentrated after 15:00.
+  - SSH brute force mitigated by rate limiting at the WAF.
+
+-- end of report --

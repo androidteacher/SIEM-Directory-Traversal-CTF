@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set active = "reports" %}
+{% block title %}{{ report }} — Reports — Polaris Cloud{% endblock %}
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic('file','ic') }} Report viewer</span>
+    <h1 class="mono" style="font-size:22px">{{ report }}</h1>
+  </div>
+  <a class="btn ghost sm" href="{{ url_for('reports') }}">← Back to reports</a>
+</div>
+
+<div class="urlbar">
+  <span class="dot3"><i style="background:#FF5468"></i><i style="background:#F5A524"></i><i style="background:#36D399"></i></span>
+  <span>GET /show-report?report=<b style="color:#ffe3a6">{{ report }}</b></span>
+</div>
+
+{% if content is not none %}
+  <div class="report">{{ content }}</div>
+{% else %}
+  <div class="card">
+    <div class="empty">
+      <img src="{{ url_for('static', filename='img/empty-reports.png') }}" alt="" aria-hidden="true">
+      <div><b>Could not open that report.</b></div>
+      <div class="muted" style="margin-top:4px;font-family:var(--mono);font-size:12.5px">{{ err }}</div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="hint">{{ ic('info','ic') }}
+  The viewer resolved your request to <span class="mono">{{ resolved }}</span> and returned whatever lives there.</div>
+
+{% endblock %}

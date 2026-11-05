@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% set active = "siem" %}
+{% block title %}Nightwatch SOC — Polaris Cloud{% endblock %}
+
+{% set SEVC = {'crit':'#FF5468','high':'#FF8A4C','warn':'#F5A524','ok':'#36D399','accent':'#F5A524','':'#2DD4BF'} %}
+
+{% macro spark(s, color) %}
+<svg class="spark" viewBox="0 0 {{ s.w }} {{ s.h }}" preserveAspectRatio="none" aria-hidden="true">
+  <defs><linearGradient id="k{{ color|replace('#','') }}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="{{ color }}" stop-opacity=".32"/><stop offset="1" stop-color="{{ color }}" stop-opacity="0"/></linearGradient></defs>
+  <path d="{{ s.area }}" fill="url(#k{{ color|replace('#','') }})"/>
+  <polyline points="{{ s.poly }}" fill="none" stroke="{{ color }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="{{ s.last[0] }}" cy="{{ s.last[1] }}" r="2" fill="{{ color }}"/>
+</svg>
+{% endmacro %}
+
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic('shield','ic') }} Security Operations</span>
+    <h1>Nightwatch SOC</h1>
+    <p class="sub">Live security monitoring for your Polaris tenant · <span class="mono">us-tex-1</span></p>
+  </div>
+  <div class="chips">
+    <span class="status"><span class="live amber"></span> Streaming · 24h</span>
+    <span class="chip" aria-pressed="false">6h</span>
+    <span class="chip" aria-pressed="true">24h</span>
+    <span class="chip" aria-pressed="false">7d</span>
+    <a class="btn ghost sm" href="{{ url_for('reports') }}">{{ ic('file','ic') }} Reports</a>
+  </div>
+</div>
+
+{# ---- KPI tiles ---- #}
+<div class="grid cols-4">
+  {% for k in kpis %}
+  <div class="card tile kpi">
+    <div class="k">{{ k.label }}</div>
+    <div class="v {{ k.tone }}">{{ k.value }}</div>
+    <div class="delta flat">{% if k.dir=='up' %}▲{% elif k.dir=='down' %}▼{% else %}•{% endif %} {{ k.delta }} <span class="muted">vs 24h ago</span></div>
+    {{ spark(k.spark_svg, SEVC[k.tone]) }}
+    <div class="bullet" title="{{ k.bullet.val }} of {{ k.bullet.max }} (target {{ k.bullet.target }})">
+      <div class="fill" style="width:{{ k.bullet_pct }}%"></div>
+      <div class="tgt" style="left:{{ k.target_pct }}%"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# ---- events chart + severity donut ---- #}
+<div class="grid siem-main" style="grid-template-columns:1.9fr 1fr;margin-top:var(--s3)">
+  <div class="card chart">
+    <h3>{{ ic('activity','ic') }} Security events — last 24h <span class="muted" style="font-weight:400;margin-left:auto;font-size:12px">peak 19:00 · {{ anomalies|length }} anomal{{ 'y' if anomalies|length==1 else 'ies' }}</span></h3>
+    <svg viewBox="0 0 620 196" role="img" aria-label="Security events per hour over the last 24 hours">
+      <defs>
+        <linearGradient id="evfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#F5A524" stop-opacity=".30"/><stop offset="1" stop-color="#F5A524" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      {% for gy in [20,60,100,140] %}<line x1="10" y1="{{ gy }}" x2="610" y2="{{ gy }}" stroke="#223042" stroke-width="1" stroke-dasharray="2 6"/>{% endfor %}
+      <path d="{{ area }}" fill="url(#evfill)"/>
+      <polyline points="{{ polyline }}" fill="none" stroke="#F5A524" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      {% for a in anomalies %}
+      <circle cx="{{ a.x }}" cy="{{ a.y }}" r="6.5" fill="none" stroke="#FF5468" stroke-width="1.6"/>
+      <circle cx="{{ a.x }}" cy="{{ a.y }}" r="2.6" fill="#FF5468"/>
+      {% endfor %}
+      {% for x,y in points %}
+      <circle cx="{{ x }}" cy="{{ y }}" r="2.2" fill="#2DD4BF"/>
+      <circle class="hit" cx="{{ x }}" cy="{{ y }}" r="12" fill="transparent"
+              data-tip="{{ '%02d:00'|format(loop.index0) }} · {{ events[loop.index0] }} events"></circle>
+      {% endfor %}
+      {% for i in [0,4,8,12,16,20,23] %}
+      <text x="{{ 10 + i*(600/23) }}" y="190" fill="#5d6b82" font-size="9" font-family="IBM Plex Mono,monospace" text-anchor="middle">{{ '%02d'|format(i) }}:00</text>
+      {% endfor %}
+    </svg>
+    <div class="legend">
+      <span class="it"><span class="sw" style="background:#F5A524"></span>events / hour</span>
+      <span class="it"><span class="sw" style="background:#FF5468"></span>flagged anomaly</span>
+    </div>
+  </div>
+
+  <div class="card chart">
+    <h3>{{ ic('alert','ic') }} Alerts by severity</h3>
+    <svg viewBox="0 0 150 150" role="img" aria-label="Alert severity breakdown" style="max-width:220px;margin:0 auto">
+      <circle cx="75" cy="75" r="52" fill="none" stroke="#0a0f17" stroke-width="15"/>
+      {% for s in segs %}
+      <circle cx="75" cy="75" r="52" fill="none" style="stroke:{{ SEVC[s.color] }}" stroke-width="15"
+              stroke-dasharray="{{ s.dash }} {{ s.gap }}" stroke-dashoffset="{{ s.offset }}"
+              transform="rotate(-90 75 75)" stroke-linecap="butt"/>
+      {% endfor %}
+      <text x="75" y="71" text-anchor="middle" fill="#E6EDF5" font-size="27" font-weight="600" font-family="Space Grotesk,sans-serif">{{ total_alerts }}</text>
+      <text x="75" y="90" text-anchor="middle" fill="#8696AC" font-size="10" font-family="IBM Plex Mono,monospace">ALERTS · 24H</text>
+    </svg>
+    <div class="legend">
+      {% for s in segs %}<span class="it"><span class="sw" style="background:{{ SEVC[s.color] }}"></span>{{ s.label }} <b class="mono" style="color:var(--ink-dim)">{{ s.count }}</b></span>{% endfor %}
+    </div>
+  </div>
+</div>
+
+{# ---- recent alerts (first block under the graph + pie) ---- #}
+<h2>Recent alerts</h2>
+<div class="chips" style="margin-bottom:12px" data-filter-group>
+  <span class="chip" data-filter="all" aria-pressed="true">All</span>
+  <span class="chip" data-filter="critical" aria-pressed="false">Critical</span>
+  <span class="chip" data-filter="high" aria-pressed="false">High</span>
+  <span class="chip" data-filter="medium" aria-pressed="false">Medium</span>
+  <span class="chip" data-filter="low" aria-pressed="false">Low</span>
+</div>
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table class="rows-link" data-sortable data-filterable>
+    <thead><tr>
+      <th class="sortable">Time <span class="ar"></span></th>
+      <th class="sortable">Severity <span class="ar"></span></th>
+      <th class="sortable">Source <span class="ar"></span></th>
+      <th>Rule</th>
+      <th class="sortable">Asset <span class="ar"></span></th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      {% for a in alerts %}
+      <tr data-sev="{{ a.sev }}" data-href="{{ url_for('alert_detail', eid=a.eid) }}">
+        <td class="mono">{{ a.time }} <span class="muted">· {{ a.ago }} ago</span></td>
+        <td><span class="sev-cell"><span class="sev-rail rail-{{ a.sev }}"></span><span class="badge b-{{ a.sev }}">{{ a.sev }}</span></span></td>
+        <td class="mono">{{ a.source }}</td>
+        <td>{{ a.rule }}</td>
+        <td class="mono">{{ a.asset }}</td>
+        <td style="text-align:right"><a class="row-link" href="{{ url_for('alert_detail', eid=a.eid) }}">Investigate {{ ic('arrow','ic') }}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+{# ---- top event sources + data flow (below recent alerts) ---- #}
+<div class="grid cols-2" style="margin-top:var(--s5)">
+  <div class="card">
+    <h3>{{ ic('activity','ic') }} Top event sources <span class="muted" style="font-weight:400;margin-left:auto;font-size:12px">tap for netflow</span></h3>
+    {% for ip, count, pct in sources %}
+    <a class="bar-row" href="{{ url_for('source_netflow', ip=ip) }}" title="Netflow for {{ ip }}">
+      <span class="mono">{{ ip }}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:{{ pct }}%"></span></span>
+      <span class="bar-num">{{ count }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>{{ ic('share','ic') }} Observed data flow</h3>
+    <div class="flow">
+      {% for stage in flows %}
+        <span class="node {{ 'ext' if stage in ['Internet','Edge WAF'] }}{{ 'db' if stage in ['cust-records','polaris-backups'] }}">{{ stage }}</span>
+        {% if not loop.last %}<span class="arrow">{{ ic('arrow','ic') }}</span>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="flow" style="margin-top:12px">
+      <span class="node db">cust-records</span>
+      <span class="arrow hot">{{ ic('arrow','ic') }}</span>
+      <span class="node exfil">198.51.100.9</span>
+    </div>
+    <div class="hint" style="margin-top:14px">Flagged: outbound spike from <b style="color:var(--crit)">cust-records</b> to a host first seen today.
+      Full detail in today's <a href="{{ url_for('reports') }}">daily SOC report</a>.</div>
+  </div>
+</div>
+
+{# ---- global threat activity (DYNAMIC, generated in app.js) — bottom of page ---- #}
+<div class="card" style="margin-top:var(--s5)">
+  <h3>{{ ic('globe','ic') }} Global threat activity <span class="muted" style="font-weight:400;margin-left:auto;font-size:12px">inbound to <span class="mono">us-tex-1</span> · <span class="live amber" style="display:inline-block;vertical-align:middle"></span> live</span></h3>
+  <div class="map-wrap">
+    <svg id="threatmap" data-hx="{{ home.x }}" data-hy="{{ home.y }}" viewBox="0 0 1000 460"
+         role="img" aria-label="Live map of inbound threat sources converging on the us-tex-1 datacenter">
+      {# graticule #}
+      {% for gx in range(0,1001,100) %}<line x1="{{ gx }}" y1="0" x2="{{ gx }}" y2="460" stroke="#172230" stroke-width="1" stroke-dasharray="1 9"/>{% endfor %}
+      {% for gy in range(0,461,76) %}<line x1="0" y1="{{ gy }}" x2="1000" y2="{{ gy }}" stroke="#172230" stroke-width="1" stroke-dasharray="1 9"/>{% endfor %}
+      {# faint node field #}
+      {% for d in [[120,90],[220,150],[360,110],[640,120],[760,180],[880,140],[430,320],[560,300],[690,330],[330,370],[850,300],[180,250]] %}
+      <circle cx="{{ d[0] }}" cy="{{ d[1] }}" r="1.6" fill="#2DD4BF" opacity=".28"/>{% endfor %}
+      {# live arcs get injected here by app.js #}
+      <g class="arc-layer"></g>
+      {# home node (always visible) #}
+      <circle cx="{{ home.x }}" cy="{{ home.y }}" r="18" fill="none" stroke="#F5A524" stroke-width="1" opacity=".4"/>
+      <circle class="map-ping ping-r" cx="{{ home.x }}" cy="{{ home.y }}" fill="none" stroke="#F5A524" stroke-width="1.6"/>
+      <circle cx="{{ home.x }}" cy="{{ home.y }}" r="5" fill="#F5A524"/>
+      <text x="{{ home.x }}" y="{{ home.y+32 }}" fill="#E6EDF5" font-size="12" font-weight="600" text-anchor="middle" font-family="Space Grotesk,sans-serif">us-tex-1</text>
+    </svg>
+  </div>
+</div>
+
+{% endblock %}

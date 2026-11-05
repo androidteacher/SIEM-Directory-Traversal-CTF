@@ -1,0 +1,8 @@
+# Keep the image lean and avoid baking local cruft into builds.
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.git/
+.gitignore
+*.tar.gz
+.DS_Store

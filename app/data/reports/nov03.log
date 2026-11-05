@@ -1,0 +1,21 @@
+===========================================================
+ Nightwatch SIEM (Polaris Cloud) -- Daily Summary
+ Date: 2026-11-03   Tenant: polaris-prod   Analyst: auto
+===========================================================
+
+TOTALS
+  Events ingested .......... 1,110
+  Alerts raised ............ 91    (critical 0 / high 9 / medium 22 / low 60)
+  Blocked connections ...... 1,355
+  Outbound data egress ..... 2.1 GB
+
+TOP ALERTS
+  18:27  HIGH      Outbound data spike to new host       cust-records  src=198.51.100.9
+  13:05  MEDIUM    TLS certificate expiring soon         public-assets
+  08:40  MEDIUM    Geo-anomaly: login from new country   api-gateway   src=192.0.2.77
+
+NOTES
+  - First sighting of egress to 198.51.100.9 (recurs on 11-05).
+  - Rotate the public-assets TLS cert before it expires.
+
+-- end of report --

@@ -1,0 +1,23 @@
+===========================================================
+ Nightwatch SIEM (Polaris Cloud) -- Daily Summary
+ Date: 2026-11-05   Tenant: polaris-prod   Analyst: auto
+===========================================================
+
+TOTALS
+  Events ingested .......... 1,042
+  Alerts raised ............ 100   (critical 3 / high 11 / medium 24 / low 62)
+  Blocked connections ...... 1,473
+  Outbound data egress ..... 2.4 GB
+
+TOP ALERTS
+  11:42  CRITICAL  Multiple failed logins then success   api-gateway   src=203.0.113.47
+  11:38  HIGH      Outbound data spike to new host       cust-records  src=198.51.100.9
+  09:14  HIGH      Port scan detected                    web-prod-02   src=203.0.113.47
+  07:30  MEDIUM    Geo-anomaly: login from new country   api-gateway   src=192.0.2.77
+
+NOTES
+  - Source 203.0.113.47 appears in multiple rules; recommend blocklist.
+  - Egress to 198.51.100.9 from cust-records is new behavior; investigate.
+  - No changes to IAM policies in the last 24h.
+
+-- end of report --

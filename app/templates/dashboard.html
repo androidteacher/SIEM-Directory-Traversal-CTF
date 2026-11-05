@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% set active = "dashboard" %}
+{% block title %}Dashboard — Polaris Cloud{% endblock %}
+
+{% macro spark(s, color) %}
+<svg class="spark" viewBox="0 0 {{ s.w }} {{ s.h }}" preserveAspectRatio="none" aria-hidden="true">
+  <defs><linearGradient id="sg{{ color }}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="{{ color }}" stop-opacity=".34"/><stop offset="1" stop-color="{{ color }}" stop-opacity="0"/></linearGradient></defs>
+  <path d="{{ s.area }}" fill="url(#sg{{ color }})"/>
+  <polyline points="{{ s.poly }}" fill="none" stroke="{{ color }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="{{ s.last[0] }}" cy="{{ s.last[1] }}" r="2" fill="{{ color }}"/>
+</svg>
+{% endmacro %}
+
+{% block body %}
+
+<div class="objective">
+  <span class="ic">{{ ic('target','ic') }}</span>
+  <div><b>LAB OBJECTIVE:</b> capture the flag at <code>{{ flag_hint }}</code>.
+  It isn't shown anywhere in this console — you'll have to <i>reach</i> it.</div>
+</div>
+
+<div class="page-h">
+  <div><h1>Dashboard</h1><p class="sub">Welcome back, {{ current_user }} — here's your Polaris environment.</p></div>
+  <a class="btn ghost sm" href="{{ url_for('siem') }}">{{ ic('shield','ic') }} Open Nightwatch SOC</a>
+</div>
+
+<div class="grid cols-4">
+  {% set tone_color = {'accent':'#F5A524','ok':'#36D399','':'#2DD4BF'} %}
+  {% for t in tiles %}
+  <div class="card tile">
+    <div class="k">{{ t.k }}</div>
+    <div class="v {{ t.tone }}">{{ t.v }}</div>
+    {{ spark(t.spark, tone_color[t.tone]) }}
+  </div>
+  {% endfor %}
+</div>
+
+<h2>Your services</h2>
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table class="rows-link" data-sortable>
+    <thead><tr>
+      <th class="sortable">Name <span class="ar"></span></th>
+      <th class="sortable">Type <span class="ar"></span></th>
+      <th class="sortable">Region <span class="ar"></span></th>
+      <th>Spec</th>
+      <th class="sortable">Status <span class="ar"></span></th>
+      <th></th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      {% set type_ic = {'Compute':'cpu','Database':'database','Storage':'storage'} %}
+      {% for s in services %}
+      <tr data-href="{{ url_for('service_detail', name=s.name) }}">
+        <td class="mono">{{ s.name }}</td>
+        <td><span class="sev-cell">{{ ic(type_ic[s.type],'ic') }} {{ s.type }}</span></td>
+        <td class="mono">{{ s.region }}</td>
+        <td>{{ s.spec }}</td>
+        <td><span class="badge b-{{ s.status }}">{{ s.status }}</span></td>
+        <td style="text-align:right"><a class="row-link" href="{{ url_for('service_detail', name=s.name) }}">Inspect {{ ic('arrow','ic') }}</a></td>
+        <td style="text-align:right"><button type="button" class="btn-stop" data-stop="{{ s.name }}">{{ ic('alert','ic') }} Stop</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<p class="sub" style="margin-top:14px">Need audit data? Head to
+<a href="{{ url_for('reports') }}">Reports</a> to view your daily SOC summaries.</p>
+
+{% endblock %}

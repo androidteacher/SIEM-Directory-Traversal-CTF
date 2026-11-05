@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set active = "register" %}
+{% block title %}Create account — Polaris Cloud{% endblock %}
+{% block body %}
+<div class="auth">
+  {{ logo('logo-lg') }}
+  <div class="card">
+    <h1>Create your account</h1>
+    <p class="lead">Spin up a free Polaris Cloud tenant — no email required.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+      <div class="flash">{{ ic('alert','ic') }}<span>{{ msg }}</span></div>
+      {% endfor %}
+    {% endwith %}
+    <form method="post">
+      <div class="field"><label for="u">Username</label>
+        <input id="u" name="username" autocomplete="username" autofocus placeholder="pick a username"></div>
+      <div class="field"><label for="p">Password</label>
+        <input id="p" name="password" type="password" autocomplete="new-password" placeholder="pick a password"></div>
+      <button class="btn block" type="submit">Create account {{ ic('arrow','ic') }}</button>
+    </form>
+    <div class="foot">Already have one? <a href="{{ url_for('login') }}">Sign in</a></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% set active = "siem" %}
+{% block title %}{{ alert.eid }} — Nightwatch SOC{% endblock %}
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic('shield','ic') }} Nightwatch · {{ alert.eid }}</span>
+    <h1>{{ alert.rule }}</h1>
+    <p class="sub"><span class="badge b-{{ alert.sev }}">{{ alert.sev }}</span>
+      &nbsp;detected {{ alert.ago }} ago at <span class="mono">{{ alert.time }}</span></p>
+  </div>
+  <a class="btn ghost sm" href="{{ url_for('siem') }}">← Back to Nightwatch</a>
+</div>
+
+<div class="card">
+  <div class="kv">
+    <div><span class="kl">Event ID</span><span class="kvv mono">{{ alert.eid }}</span></div>
+    <div><span class="kl">Detected</span><span class="kvv mono">{{ alert.time }}</span></div>
+    <div><span class="kl">Severity</span><span class="kvv"><span class="badge b-{{ alert.sev }}">{{ alert.sev }}</span></span></div>
+    <div><span class="kl">Source</span><span class="kvv"><a class="mono" href="{{ url_for('source_netflow', ip=alert.source) }}">{{ alert.source }} {{ ic('arrow','ic') }}</a></span></div>
+    <div><span class="kl">Target asset</span><span class="kvv mono">{{ alert.asset }}{% if host %} <span class="muted">({{ host }})</span>{% endif %}</span></div>
+    <div><span class="kl">Status</span><span class="kvv"><span class="badge b-high">open</span></span></div>
+  </div>
+</div>
+
+<div class="logs-head">
+  <h2 style="margin:0">Correlated raw events</h2>
+  <div class="search">
+    {{ ic('search','ic') }}
+    <input type="search" data-logsearch="#logtable" placeholder="Filter events — user, port, component, IP…" aria-label="Filter events">
+    <span class="count" data-count-for="#logtable"></span>
+  </div>
+</div>
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table id="logtable" data-sortable>
+    <thead><tr>
+      <th class="sortable">Time <span class="ar"></span></th>
+      <th class="sortable">Level <span class="ar"></span></th>
+      <th class="sortable">Component <span class="ar"></span></th>
+      <th class="sortable">Source <span class="ar"></span></th>
+      <th>Message</th>
+    </tr></thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td class="mono">{{ e.t }}</td>
+        <td><span class="lvl lvl-{{ e.lvl }}">{{ e.lvl }}</span></td>
+        <td class="mono">{{ e.comp }}</td>
+        <td class="mono">{{ e.src }}</td>
+        <td class="mono msg">{{ e.msg }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+<p class="sub" style="margin-top:12px">{{ ic('info','ic') }} Pivot to the source's traffic from the <b>Source</b> field above,
+or review the daily summary in <a href="{{ url_for('reports') }}">Reports</a>.</p>
+
+{% endblock %}

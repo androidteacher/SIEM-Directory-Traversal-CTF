@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Polaris Cloud — Secure Cloud Console{% endblock %}
+{% block body %}
+
+<div class="objective" style="justify-content:center;text-align:center">
+  <span class="ic">{{ ic('target','ic') }}</span>
+  <div><b>LAB OBJECTIVE:</b> capture the flag stored at <code>{{ flag_hint }}</code>.
+  Register, explore the console, and find a way to read that file.</div>
+</div>
+
+<section class="hero art">
+  <div class="inner">
+    <span class="eyebrow">{{ ic('shield','ic') }} Polaris Cloud · Nightwatch SOC</span>
+    <h1>One console for your cloud, watched around the clock.</h1>
+    <p>Compute, databases, storage, and the Nightwatch security operations center —
+       live telemetry, global threat visibility, and daily SOC reporting in a single pane.</p>
+    <div class="cta">
+      <a class="btn" href="{{ url_for('register') }}">Create free account {{ ic('arrow','ic') }}</a>
+      <a class="btn ghost" href="{{ url_for('login') }}">Sign in</a>
+    </div>
+    <div class="meta">
+      <div class="m"><div class="n">31</div><div class="l">regions</div></div>
+      <div class="m"><div class="n">1,473</div><div class="l">threats blocked / 24h</div></div>
+      <div class="m"><div class="n">99.98%</div><div class="l">control-plane uptime</div></div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

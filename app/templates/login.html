@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set active = "login" %}
+{% block title %}Sign in — Polaris Cloud{% endblock %}
+{% block body %}
+<div class="auth">
+  {{ logo('logo-lg') }}
+  <div class="card">
+    <h1>Welcome back</h1>
+    <p class="lead">Sign in to your Polaris Cloud console.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+      <div class="flash">{{ ic('alert','ic') }}<span>{{ msg }}</span></div>
+      {% endfor %}
+    {% endwith %}
+    <form method="post">
+      <div class="field"><label for="u">Username</label>
+        <input id="u" name="username" autocomplete="username" autofocus placeholder="you@tenant"></div>
+      <div class="field"><label for="p">Password</label>
+        <input id="p" name="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <button class="btn block" type="submit">Sign in {{ ic('arrow','ic') }}</button>
+    </form>
+    <div class="foot">New here? <a href="{{ url_for('register') }}">Create an account</a></div>
+  </div>
+</div>
+{% endblock %}

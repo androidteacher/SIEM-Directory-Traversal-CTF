@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% set active = "siem" %}
+{% block title %}Netflow — {{ ip }} — Nightwatch SOC{% endblock %}
+{% block body %}
+
+<div class="page-h">
+  <div>
+    <span class="eyebrow">{{ ic('share','ic') }} Nightwatch · Netflow</span>
+    <h1>Netflow Data for <span class="mono">{{ ip }}</span></h1>
+    <p class="sub">Observed flow records between <span class="mono">{{ ip }}</span> and Polaris tenant assets · last 60 min</p>
+  </div>
+  <a class="btn ghost sm" href="{{ url_for('siem') }}">← Back to Nightwatch</a>
+</div>
+
+<div class="grid cols-4">
+  <div class="card tile"><div class="k">Flows</div><div class="v accent">{{ summary.flows }}</div></div>
+  <div class="card tile"><div class="k">Total bytes</div><div class="v">{{ summary.bytes }}</div></div>
+  <div class="card tile"><div class="k">Distinct peers</div><div class="v ok">{{ summary.peers }}</div></div>
+  <div class="card tile"><div class="k">Endpoint</div><div class="v mono" style="font-size:18px">{{ ip }}</div></div>
+</div>
+
+<div class="logs-head">
+  <h2 style="margin:0">Flow records</h2>
+  <div class="search">
+    {{ ic('search','ic') }}
+    <input type="search" data-logsearch="#flowtable" placeholder="Filter flows — port, proto, peer, flags…" aria-label="Filter flows">
+    <span class="count" data-count-for="#flowtable"></span>
+  </div>
+</div>
+<div class="card pad-tight">
+  <div class="tbl-wrap">
+  <table id="flowtable" data-sortable>
+    <thead><tr>
+      <th class="sortable">Start <span class="ar"></span></th>
+      <th class="sortable">Duration <span class="ar"></span></th>
+      <th class="sortable">Proto <span class="ar"></span></th>
+      <th class="sortable">Source <span class="ar"></span></th>
+      <th class="sortable">Destination <span class="ar"></span></th>
+      <th class="sortable">Packets <span class="ar"></span></th>
+      <th class="sortable">Bytes <span class="ar"></span></th>
+      <th>Flags</th>
+      <th>Dir</th>
+    </tr></thead>
+    <tbody>
+      {% for f in rows %}
+      <tr>
+        <td class="mono">{{ f.t }}</td>
+        <td class="mono">{{ f.dur }}</td>
+        <td class="mono">{{ f.proto }}</td>
+        <td class="mono">{{ f.src }}</td>
+        <td class="mono">{{ f.dst }}</td>
+        <td class="mono num">{{ f.pkts }}</td>
+        <td class="mono num" data-sort="{{ f.raw_bytes }}">{{ f.bytes }}</td>
+        <td class="mono">{{ f.flags }}</td>
+        <td><span class="lvl {{ 'lvl-ALERT' if f.dir=='out' else 'lvl-INFO' }}">{{ f.dir }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+<p class="sub" style="margin-top:12px">{{ ic('info','ic') }} Flows are summarized NetFlow v5 records; byte counts are bidirectional per flow.</p>
+
+{% endblock %}
