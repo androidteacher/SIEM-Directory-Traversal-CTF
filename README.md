@@ -8,18 +8,16 @@
 
 <p align="center"><strong>Open a fresh terminal in Kali and paste the commands in the command block below</strong></p>
 
-<p align="center">These commands pull the lab image, start the container, and open the <strong>Polaris Cloud</strong> console (<code>http://localhost:12334</code>) in Firefox</p>
+<p align="center">These commands pull the lab image, start the container, and open the <strong>Polaris Cloud</strong> console:</p>
+
+<p align="center"><a href="http://localhost:12334">http://localhost:12334</a></p>
 
 ```bash
 docker run -d --name siem-traversal --pull=always -p 12334:8080 joshbeck2024/siem-traversal-flag-green-9:latest
 nohup firefox http://localhost:12334 >/dev/null 2>&1 &
 ```
 
-<p align="center"><em>The guided walkthrough and the solution are built into the image — after you sign in, open them from the <strong>Solution</strong> link in the console's top nav (or visit <code>http://localhost:12334/solution.html</code>).</em></p>
-
-<p align="center">Stop and remove it when you're done: <code>docker rm -f siem-traversal</code></p>
-
-<p align="center"><sub>Maintainers building from source instead (<code>./start_container.sh</code>) also need the <code>Tutorial/</code> folder, which is intentionally kept out of this repo so the solution isn't public — the published image already bundles it.</sub></p>
+<p align="center">The guided walkthrough and solution are built into the image.</p>
 
 ---
 
@@ -32,17 +30,16 @@ nohup firefox http://localhost:12334 >/dev/null 2>&1 &
 - That viewer reads **whatever file you name** with no path checking. Climb out of the
   reports folder with `../` to read the flag.
 - **Flag location:** `/private_folder/flag.txt`
-- **The attack:** `http://localhost:12334/show-report?report=../../../private_folder/flag.txt`
 
 ---
 
 ## What this teaches (SY0-701)
 
-**Directory / path traversal** is what happens when an app builds a file path out of user
-input without validating it. The `../` sequence climbs up the directory tree and escapes the
-folder the app meant to serve. It's a classic **input-validation** failure, and recognizing /
-preventing it (reject `..`, canonicalize and confine paths, serve by safe ID, run least-privilege)
-is squarely on the exam.
+- **Directory / path traversal** = building a file path from **user input** that isn't validated.
+- `../` climbs up the directory tree and escapes the folder the app meant to serve.
+- It's a classic **input-validation** failure.
+- **Prevent it:** reject `..`, canonicalize and confine paths, serve files by safe ID, run least-privilege.
+- Squarely on the **SY0-701** exam.
 
 ## Requirements
 
