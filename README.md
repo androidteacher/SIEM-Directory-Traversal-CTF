@@ -10,12 +10,12 @@
 
 <p align="center">These commands pull the lab image, start the container, and open the <strong>Polaris Cloud</strong> console:</p>
 
-<p align="center"><a href="http://localhost:12334">http://localhost:12334</a></p>
-
 ```bash
 docker run -d --name siem-traversal --pull=always -p 12334:8080 joshbeck2024/siem-traversal-flag-green-9:latest
 nohup firefox http://localhost:12334 >/dev/null 2>&1 &
 ```
+
+<p align="center"><a href="http://localhost:12334">http://localhost:12334</a></p>
 
 <p align="center">The guided walkthrough and solution are built into the image.</p>
 
