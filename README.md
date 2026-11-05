@@ -1,6 +1,8 @@
 <p align="center"><img src="assets/NightWatch_SIEM_Traversal.png" alt="Nightwatch SIEM — Polaris Cloud console" width="640"></p>
 
-<h1 align="center">Polaris Cloud — Directory Traversal Lab (Security+ SY0-701)</h1>
+<h1 align="center">Polaris Cloud — Directory Traversal Lab</h1>
+
+<p align="center"><strong>(Security+ SY0-701)</strong></p>
 
 <h2 align="center">Start Here</h2>
 
