@@ -25,10 +25,6 @@ nohup firefox http://localhost:12334 >/dev/null 2>&1 &
 
 - Register an account on the **Polaris Cloud** console and sign in.
 - Explore the cloud dashboard and the **Nightwatch** SOC (charts, alerts, threat map, data flows).
-- The **Reports** page opens files by name:
-  `http://localhost:12334/show-report?report=nov05.log`
-- That viewer reads **whatever file you name** with no path checking. Climb out of the
-  reports folder with `../` to read the flag.
 - **Flag location:** `/private_folder/flag.txt`
 
 ---
@@ -38,7 +34,6 @@ nohup firefox http://localhost:12334 >/dev/null 2>&1 &
 - **Directory / path traversal** = building a file path from **user input** that isn't validated.
 - `../` climbs up the directory tree and escapes the folder the app meant to serve.
 - It's a classic **input-validation** failure.
-- **Prevent it:** reject `..`, canonicalize and confine paths, serve files by safe ID, run least-privilege.
 - Squarely on the **SY0-701** exam.
 
 ## Requirements
